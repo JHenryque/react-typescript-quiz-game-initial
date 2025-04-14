@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import "./App.scss";
 import FullPageLoader from "./components/FullPageLoader.tsx";
 import Score from "./components/Score.tsx";
@@ -11,6 +12,7 @@ function App() {
   async function fetchQuestion() {
     try {
       dispatch({ type: "setStatus", payload: "fetching" });
+      dispatch({ type: "setUserAnswer", payload: null });
       const response = await fetch(
         "https://opentdb.com/api.php?amount=20&category=18"
       );
@@ -19,6 +21,16 @@ function App() {
 
       if (data.response_code === 0) {
         const question: Question = data.results[0];
+
+        let randomIndex = Math.round(
+          Math.random() * question.incorrect_answers.length
+        );
+        question.incorrect_answers.splice(
+          randomIndex,
+          0,
+          question.correct_answer
+        );
+
         dispatch({ type: "setStatus", payload: "ready" });
         dispatch({ type: "setQuestion", payload: question });
       } else {
@@ -42,13 +54,11 @@ function App() {
         <FullPageLoader />
       ) : state.gameStatus === "error" ? (
         <p>Something went wrong</p>
-      ) : state.gameStatus === "ready" ? (
+      ) : (
         <>
           <Score />
           <Game />
         </>
-      ) : (
-        ""
       )}
     </>
   );
